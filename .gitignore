@@ -1,0 +1,8 @@
+Arduino
+Desktop
+Downloads
+moos-ivp
+sketchbook
+.*
+catkin_ws/devel
+catkin_ws/build

@@ -63,16 +63,22 @@ class Dashboard(object):
     POSE_MAX_TIMESTEPS = 2000
     POSE_ATTRIBUTES = ['x', 'y', 'theta', 'linear_velocity', 'angular_velocity']
 
+    # Plot Constants
+    SAMPLE_RATE_TOPIC = '/get_sound_data/pcm_sampleRate' 
+    PLOT_TIME = 5 # (sec)
 
     def __init__(self):
         global APP
 
         # The Flask application
         self._app = APP
-        self._flask_server = self._app.server
+
+        # OnstartUp
+        self.fs = rospy.get_param(Dashboard.SAMPLE_RATE_TOPIC)
 
         # Initialize the variables that we'll be using to save information
         #self._pose_history_lock = Lock()
+        self.plot_ch1 = np.zeros(self.fs * Dashboard.PLOT_TIME)
 
         # Setup the subscribers, action clients, etc.ntu_msgs/HydrophoneData
         self._voltage_sub = rospy.Subscriber('/hydrophone_data', HydrophoneData, self._voltage_cb)
@@ -138,8 +144,8 @@ class Dashboard(object):
             data = [
                 go.Scatter(
                     name=attr,
-                    x=[0, 1, 2, 3, 4, 5],
-                    y=[0, 1, 2, 3, 4, 5],
+                    x=self.plot_ch1,
+                    y=list(range(0,self.plot_ch1.size,1)),
                     mode='lines+markers'
                 )
             ]
@@ -163,5 +169,9 @@ class Dashboard(object):
         The callback for the position of the turtle on
         :const:`TURTLE_POSE_TOPIC`
         """
-        pass
+        tmp = np.array(msg.data_ch1)
+        self.plot_ch1 = self.plot_ch1[tmp.size:]
+        self.plot_ch1 = np.concatenate((self.plot_ch1,tmp),axis=0)
+        print(tmp)
+        print("msg recieved")
 

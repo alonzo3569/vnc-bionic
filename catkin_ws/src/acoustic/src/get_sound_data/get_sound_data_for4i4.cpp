@@ -147,6 +147,8 @@ hydrophone_data_node::~hydrophone_data_node()
     snd_pcm_close(pcm_handle_);
     free(pcm_period_buffer_);
     cout << DEVICE_NAME_ << " stop recording." << endl;
+    //free(pcm_params_);
+
 }
 
 bool hydrophone_data_node::setRecorderParams(void) {

@@ -55,14 +55,12 @@ class Dashboard(object):
     # Actions, Topics, and Services
     # Note that although the values are hard-coded for now, these can be set via
     # service or ROS params if need be (a trivial update)
-    TURTLE_POSE_TOPIC = '/turtle1/pose'
 
     # Constants that determine the behaviour of the dashboard
     # Pose is published at ~62 Hz; so we'll see ~30 sec of history. Note that
     # these parameters could be set through ROS parameters or services too!
-    POSE_UPDATE_INTERVAL = 1
+    POSE_UPDATE_INTERVAL = 0.5
     POSE_MAX_TIMESTEPS = 2000
-    POSE_ATTRIBUTES = ['x', 'y', 'theta', 'linear_velocity', 'angular_velocity']
 
     # Plot Constants
     SAMPLE_RATE_TOPIC = '/get_sound_data/pcm_sampleRate' 
@@ -78,8 +76,12 @@ class Dashboard(object):
         self.fs = rospy.get_param(Dashboard.SAMPLE_RATE_TOPIC)
 
         # Initialize the variables that we'll be using to save information
-        #self._pose_history_lock = Lock()
         self.plot_ch1 = np.zeros(self.fs * Dashboard.PLOT_TIME)
+
+        self.time_axis = list(range(0,self.plot_ch1.size,1))
+        self.time_axis = [element/self.fs for element in self.time_axis]
+        self.division = 50 # downsample 
+        self.time_axis_downsample = self.time_axis[::self.division]
 
         # Setup the subscribers, action clients, etc.ntu_msgs/HydrophoneData
         self._voltage_sub = rospy.Subscriber('/hydrophone_data', HydrophoneData, self._voltage_cb)
@@ -87,9 +89,6 @@ class Dashboard(object):
         # Initialize the application
         self._define_app()
 
-    @property
-    def pose_history(self):
-        return self._pose_history[:, :self._history_length]
 
     def start(self):
         self._app.run_server(host=Dashboard.APP_HOST,
@@ -111,7 +110,7 @@ class Dashboard(object):
 
         # First the graph element that will plot the pose and velocity of the
         # robot
-        pose_graph_layout = html.Div(dcc.Graph(id='pose', style={ 'width': '100%' }, animate=True,), className='row')
+        pose_graph_layout = html.Div(dcc.Graph(id='pose', style={ 'width': '100%' },), className='row')
 
         # String them all together in a single page
         self._app.layout = html.Div(
@@ -135,31 +134,30 @@ class Dashboard(object):
             [Input('interval-component','n_intervals')]
         )
         def plot_volts_cb(n_intervals):
-            #print("HI")
 
-            X = list(range(0,self.plot_ch1.size,1))
             Y = self.plot_ch1.tolist()
-            print('X')
-            print(len(X))
-            print('Y')
-            print(len(Y))
-            X = signal.resample(X,len(X)/100)
-            Y = signal.resample(Y,len(Y)/100)
-            print('X after')
-            print(len(X))
-            print('Y after')
-            print(len(Y))
-            #X = list(range(0,60*1000,1)) # Upper bound of dash buffer : 100k
-            #Y = list(range(0,60*1000,1))
+            Y_down = signal.resample(Y,int(len(Y)/self.division))
+            #print('time_axis')
+            #print(len(self.time_axis))
+            #print('time_axis downsample')
+            #print(len(self.time_axis_downsample))
+
+            #print('Y_axis')
+            #print(len(Y))
+            #print('Y_axis downsample')
+            #print(len(Y_down))
+            #print(type(Y_down))
+            # Upper bound of dash buffer : 100k
+
+
             # plot
             data = go.Scatter(
-                    x=X,
-                    y=Y, # Y = [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]
+                    x=self.time_axis_downsample,
+                    y=Y_down.tolist(), 
                     name='Scatter',
-                    mode= 'lines+markers'
+                    mode= 'lines'
                     )
         
-            # return figure
             print(data)
 
             layout = go.Layout(
@@ -167,10 +165,10 @@ class Dashboard(object):
                 height=500,
                 yaxis=dict(
                     #fixedrange=True
-                    range=[min(Y),max(Y)]
+                    range=[-0.6,0.6]
                 ),
                 xaxis=dict(
-                    range=[min(X),max(X)]
+                    range=[min(self.time_axis_downsample),max(self.time_axis_downsample)]
                 ),
 
                 margin=dict(
@@ -179,62 +177,14 @@ class Dashboard(object):
             )
 
 
-            #return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
-            #                                            yaxis=dict(range=[0,10]),)}
-
             return { 'data': [data], 'layout': layout }
-        # Define callbacks to update the elements on the page
-        #self._app.callback(
-        #    dash.dependencies.Output('pose', 'figure'),
-        #    [dash.dependencies.Input('interval-component', 'n_intervals')]
-        #)(self._define_pose_history_callback())
-
-#    def _define_pose_history_callback(self):
-#        """
-#        Define a callback that will be invoked on every update of the interval
-#        component. Keep in mind that we return a callback here; not a result
-#        """
-#        def pose_history_callback(n_intervals):
-#            # determine x value
-#            tmp = [np.arange(1,11).tolist()]
-#            X = [element+intervals for element in tmp[0]]
-#            # Create the output graph
-#            data = [
-#                go.Scatter(
-#                    name='Scatter',
-#                    x=X,#self.plot_ch1,
-#                    y=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],#list(range(0,self.plot_ch1.size,1)),
-#                    mode='lines+markers'
-#                )
-#            ]
-#            layout = go.Layout(
-#                showlegend=True,
-#                height=500,
-#                yaxis=dict(
-#                    fixedrange=True
-#                ),
-#                margin=dict(
-#                    autoexpand=True
-#                )
-#            )
-#            #print(list(range(0,self.plot_ch1.size,1)))
-#
-#            return { 'data': data, 'layout': layout }
-#
-#        return pose_history_callback
 
     def _voltage_cb(self, msg):
-        """
-        The callback for the position of the turtle on
-        :const:`TURTLE_POSE_TOPIC`
-        """
+
+        # Get subscribe msg
         tmp = np.array(msg.data_ch1)
+
+        # Remove previous data & append msg to array
         self.plot_ch1 = self.plot_ch1[tmp.size:]
         self.plot_ch1 = np.concatenate((self.plot_ch1,tmp),axis=0)
-        #print(self.plot_ch1)
-        #print('plot_ch1_size')
-        #print(self.plot_ch1.size)
-        #print('list size')
-        #print(len(list(range(0,self.plot_ch1.size,1))))
-        #print("msg recieved")
 

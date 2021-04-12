@@ -66,7 +66,7 @@ class Dashboard(object):
     SAMPLE_RATE_PARAM = '/get_sound_data/pcm_sampleRate' 
     #WINDOW_LENGTH_PARAM = '/compute_fft_node/WINDOW_LENGTH_' 
     PLOT_TIME = 5 # (sec)
-    PLOT_FFT_TIME = 0.1 # (sec)
+    PLOT_FFT_TIME = 0.05 # (sec)
 
     def __init__(self):
         global APP
@@ -123,7 +123,7 @@ class Dashboard(object):
         # First the graph element that will plot the pose and velocity of the
         # robot
         volts_graph_layout = html.Div(dcc.Graph(id='volts', style={ 'width': '100%' },), className='row')
-        fft_graph_layout = html.Div(dcc.Graph(id='fft', style={ 'width': '100%' },), className='row')
+        fft_graph_layout = html.Div(dcc.Graph(id='fft', style={'width':'45vh','height':'85vh'}), className='row')
 
         # String them all together in a single page
         self._app.layout = html.Div(
@@ -202,19 +202,16 @@ class Dashboard(object):
         )
         def plot_fft_cb(n_intervals):
 
-            print(len(self.fft_t_axis))
-            print(len(self.fft_f_axis))
-            print(self.plot_fft_ch1.shape)
-            print(self.plot_fft_ch1.T.shape)
+            #print(len(self.fft_t_axis))
+            #print(len(self.fft_f_axis))
+            #print(self.plot_fft_ch1.shape)
+            #print(self.plot_fft_ch1.T.shape)
 
             # plot
             data = go.Heatmap(
-                    #x=self.fft_t_axis,
                     x=self.fft_t_axis,
-                    #y=self.fft_f_axis, 
                     y=self.fft_f_axis, 
                     z=self.plot_fft_ch1.tolist(),
-                    #z=self.plot_fft_ch1.T.tolist(),
                     type='heatmap',
                     colorscale='Jet',
                     #name='Scatter',
@@ -253,33 +250,20 @@ class Dashboard(object):
             print('init===========================================================')
             self.delta_f = msg.delta_f 
             self.delta_t = msg.delta_t
-            self.plot_fft_ch1 = np.zeros((int(Dashboard.PLOT_FFT_TIME//self.delta_t),len(msg.fft_ch1)))
-            #self.time_axis = list(range(0,self.plot_ch1.size,1))
-            #self.time_axis = [element/self.fs for element in self.time_axis]
+            self.plot_fft_ch1 = np.zeros((len(msg.fft_ch1),int(Dashboard.PLOT_FFT_TIME//self.delta_t))) # (513,93)
             self.fft_t_axis = list(range(0,int(Dashboard.PLOT_FFT_TIME//self.delta_t),1))
             self.fft_t_axis = [element*self.delta_t for element in self.fft_t_axis]
             self.fft_f_axis = list(range(0,len(msg.fft_ch1),1))
             self.fft_f_axis = [element*self.delta_f for element in self.fft_f_axis]
             self.init_fft = True
 
-        #print('len msg fft ch1')
-        #print(len(msg.fft_ch1))
-        tmp = np.array(msg.fft_ch1)
-        tmp = tmp[np.newaxis,:] # change into 2 dimensions
+        tmp = np.array(msg.fft_ch1[::-1])
+        tmp = tmp[np.newaxis,:].T # change into 2 dimensions (513,1)
 
-        # Remove previous data & append msg to array
-        #print('1')
-        #print(self.plot_fft_ch1.shape[0])
-        #print(self.plot_fft_ch1.shape[1])
-        #print(len(msg.fft_ch1))
-        if len(msg.fft_ch1) == self.plot_fft_ch1.shape[1]:
-            #print('Add')
-            self.plot_fft_ch1 = self.plot_fft_ch1[:-1]
-            #print('2')
-            #print(self.plot_fft_ch1.shape)
-            #print('3')
-            #print(tmp.shape)
-            self.plot_fft_ch1 = np.concatenate((tmp,self.plot_fft_ch1),axis=0)
+        # Remove previous data & append new msg (if their dimensions are same)
+        if len(msg.fft_ch1) == self.plot_fft_ch1.shape[0]:
+            self.plot_fft_ch1 = self.plot_fft_ch1[:,1:]
+            self.plot_fft_ch1 = np.concatenate((self.plot_fft_ch1,tmp),axis=1)
             #self.plot_fft_ch1 = self.plot_fft_ch1 * 1
 
     def _voltage_cb(self, msg):
@@ -287,6 +271,6 @@ class Dashboard(object):
         # Get subscribe msg
         tmp = np.array(msg.data_ch1)
 
-        # Remove previous data & append msg to array
+        # Remove previous data & append new msg
         self.plot_ch1 = self.plot_ch1[tmp.size:]
         self.plot_ch1 = np.concatenate((self.plot_ch1,tmp),axis=0)

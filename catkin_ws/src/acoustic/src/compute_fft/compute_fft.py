@@ -25,8 +25,8 @@ class compute_fft_node:
         self.msg = HydrophoneFFTData()
 
         # define subscriber and publisher 
-        rospy.Subscriber("/get_sound_data_for2i2/hydrophone_data", HydrophoneData, self.callback)
-        self.pub = rospy.Publisher('/compute_fft/fft_data', HydrophoneFFTData, queue_size=10)
+        rospy.Subscriber("/hydrophone_data", HydrophoneData, self.callback)
+        self.pub = rospy.Publisher('/fft_data', HydrophoneFFTData, queue_size=10)
     # define the function to get the private node parameters setting 
     # for this node from compute_fft.yaml file
     def getParameters(self):

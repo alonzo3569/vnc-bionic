@@ -26,6 +26,11 @@
     <node pkg="signal_process" type="fft.py" name="fft_node" output="screen">
     </node>
 
+    <!-- fft -->
+    <node pkg="visualization" type="plot.py" name="plot_node" output="screen">
+    </node>
+
+
 
 
 </launch>

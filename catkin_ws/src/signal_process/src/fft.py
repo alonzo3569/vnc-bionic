@@ -16,7 +16,7 @@ class FFT:
 
             # OnstartUp
             self.chunk = rospy.get_param('~chunk', 1024)
-            self.fs = rospy.get_param('~fs', 192000)
+            self.fs = rospy.get_param('~rate', 192000)
             self.overlap = rospy.get_param('~overlap', 0.9)
             #print "Set Format   : ", str(self.format), type(self.format)
 

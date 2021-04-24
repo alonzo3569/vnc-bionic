@@ -17,16 +17,18 @@ class PLOT:
     def __init__(self):
         # OnstartUp
         self.chunk = rospy.get_param('~chunk', 1024)
-        self.fs = rospy.get_param('~fs', 192000)
+        self.fs = rospy.get_param('~rate', 192000)
 
         # Initialize fig
         self.fig, self.ax = plt.subplots(figsize=(10,3))
         self.plot_fft_ch1 = np.zeros((3,3))
-        self.im = self.ax.imshow(self.plot_fft_ch1, cmap=plt.cm.jet, origin='lower', vmin=0, vmax=-100, aspect='auto')
+        self.im = self.ax.imshow(self.plot_fft_ch1, cmap=plt.cm.jet, origin='lower', vmin=-100, vmax=0, aspect='auto')
         self.fig.colorbar(self.im, ax=self.ax)
         #self.ax.set_label_position()
+        self.ax.axis('auto')
+        self.ax.set_ylim([0, 20])
         self.ax.set_xlabel("Time(s)")
-        self.ax.set_ylabel("Frequency(Hz)")
+        self.ax.set_ylabel("Frequency(kHz)")
 
         # Initialize params
         self.first_msg = True
@@ -35,6 +37,7 @@ class PLOT:
         self.counter = 0
         self.time_pre = 0.0
         self.fft_result_len = self.chunk//2 + 1
+        self.animation_start = rospy.get_time()
 
 
         # Subscriber
@@ -70,7 +73,10 @@ class PLOT:
 
     def animation_frame(self,i):
         self.im.set_array(self.plot_fft_ch1)
-        self.im.set_extent([0,5,0,96])
+        time_end = int(rospy.get_time() - self.animation_start)
+        time_start = time_end - PLOT.PLOT_FFT_TIME
+        self.im.set_extent([time_start, time_end, 0, self.fs//2//1000])
+        #self.im.set_extent([0,5,0,96])
         return [self.im]
 
 

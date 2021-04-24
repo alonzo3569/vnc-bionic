@@ -6,7 +6,8 @@
     <arg name="rate" default="192000"/>
     <arg name="chunk" default="19200"/>
     <arg name="msg_length" default="1.0"/>
-
+    <arg name="overlap" default="0.9"/>
+    <arg name="path" default="/root/vnc-bionic/catkin_ws/src/recorder/wavefile/"/>
 
     <!-- Focusrite -->
     <node pkg="recorder" type="audio.py" name="recorder_node" output="screen">
@@ -19,15 +20,23 @@
 
     <!-- wav -->
     <node pkg="recorder" type="wav.py" name="wav_node" output="screen">
+        <param name="channels" type="int" value="$(arg channels)"/>
+        <param name="rate" type="int" value="$(arg rate)"/>
+        <param name="path" type="str" value="$(arg path)"/>
     </node>
 
 
     <!-- fft -->
     <node pkg="signal_process" type="fft.py" name="fft_node" output="screen">
+        <param name="chunk" type="int" value="$(arg chunk)"/>
+        <param name="rate" type="int" value="$(arg rate)"/>
+        <param name="overlap" type="double" value="$(arg overlap)"/>
     </node>
 
     <!-- fft -->
     <node pkg="visualization" type="plot.py" name="plot_node" output="screen">
+        <param name="chunk" type="int" value="$(arg chunk)"/>
+        <param name="rate" type="int" value="$(arg rate)"/>
     </node>
 
 

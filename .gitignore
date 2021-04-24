@@ -6,3 +6,4 @@ sketchbook
 .*
 catkin_ws/devel
 catkin_ws/build
+*.wav

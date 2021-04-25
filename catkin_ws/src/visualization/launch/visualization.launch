@@ -4,8 +4,9 @@
     <!-- <arg name="format" default="pyaudio.paInt32"/> -->
     <arg name="channels" default="2"/>
     <arg name="rate" default="192000"/>
-    <arg name="chunk" default="19200"/>
+    <arg name="pyaudio_chunk" default="19200"/>
     <arg name="msg_length" default="1.0"/>
+    <arg name="fft_chunk" default="1024"/>
     <arg name="overlap" default="0.9"/>
     <arg name="path" default="/root/vnc-bionic/catkin_ws/src/recorder/wavefile/"/>
 
@@ -14,7 +15,7 @@
         <!-- <param name="format" type="str" value="$(arg format)"/> -->
         <param name="channels" type="int" value="$(arg channels)"/>
         <param name="rate" type="int" value="$(arg rate)"/>
-        <param name="chunk" type="int" value="$(arg chunk)"/>
+        <param name="chunk" type="int" value="$(arg pyaudio_chunk)"/>
         <param name="msg_length" type="double" value="$(arg msg_length)"/>
     </node>
 
@@ -28,14 +29,14 @@
 
     <!-- fft -->
     <node pkg="signal_process" type="fft.py" name="fft_node" output="screen">
-        <param name="chunk" type="int" value="$(arg chunk)"/>
+        <param name="chunk" type="int" value="$(arg fft_chunk)"/>
         <param name="rate" type="int" value="$(arg rate)"/>
         <param name="overlap" type="double" value="$(arg overlap)"/>
     </node>
 
     <!-- fft -->
     <node pkg="visualization" type="plot.py" name="plot_node" output="screen">
-        <param name="chunk" type="int" value="$(arg chunk)"/>
+        <param name="chunk" type="int" value="$(arg fft_chunk)"/>
         <param name="rate" type="int" value="$(arg rate)"/>
     </node>
 

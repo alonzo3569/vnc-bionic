@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-
-  <!-- Launch the dashboard -->
-  <node name="web_app" pkg="web_app" type="web_app.py" output="screen" />
-
-</launch>

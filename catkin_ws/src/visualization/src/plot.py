@@ -16,8 +16,8 @@ class PLOT:
 
     def __init__(self):
         # OnstartUp
-        self.chunk = rospy.get_param('~chunk', 1024)
-        self.fs = rospy.get_param('~rate', 192000)
+        self.chunk = rospy.get_param('~fft_chunk', 1024) # 1024
+        self.fs = rospy.get_param('~rate', 192000) # 192000
 
         # Initialize fig
         self.fig, self.ax = plt.subplots(figsize=(10,3))
@@ -35,6 +35,7 @@ class PLOT:
         self.delta_f = 0.0
         self.delta_t = 0.0
         self.counter = 0
+        self.msg_number = 0
         self.time_pre = 0.0
         self.fft_result_len = self.chunk//2 + 1
         self.animation_start = rospy.get_time()
@@ -47,6 +48,8 @@ class PLOT:
 
     def fft_cb(self, msg):
         # Calculate msg recieved
+        self.msg_number = self.msg_number + 1
+        print(f'Recieved number {self.msg_number} message')
         self.counter = self.counter + 1
         time_cur = rospy.get_time()
         if time_cur - self.time_pre >= 1.0:

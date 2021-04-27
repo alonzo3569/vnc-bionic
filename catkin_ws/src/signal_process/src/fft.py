@@ -27,6 +27,7 @@ class FFT:
             self.ch2_data_array = np.array([])
 
             self.count = 0
+            self.msg_number = 0
 
 
             # Subscriber
@@ -89,6 +90,7 @@ class FFT:
 
             print "Finish process ", self.count, " chunks of data." # process 1sec data in 0.2sec
             self.count = 0
+            print "Publish msg number ", self.msg_number
             #time_end = rospy.get_time() 
             #print "time_end : ", time_end
             #print "Process 1s data spent : ", time_end-time_start, " sec"

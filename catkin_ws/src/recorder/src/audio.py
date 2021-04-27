@@ -48,7 +48,7 @@ class Recorder:
             while not rospy.is_shutdown():
                 # Read data stream, if chunk size is too small, data will be overwrite by new data
                 # type(data) : str
-                data = self.stream.read(self.chunk)
+                data = self.stream.read(self.chunk, excpetion_on_overflow = False)
 
                 # Convert string to numpy array
                 # data array element type : int32

@@ -6,7 +6,7 @@
     <arg name="rate" default="192000"/>
     <arg name="pyaudio_chunk" default="19200"/>
     <arg name="msg_length" default="1.0"/>
-    <arg name="fft_chunk" default="19200"/>
+    <arg name="fft_chunk" default="1024"/>
     <arg name="overlap" default="0.9"/>
     <arg name="path" default="/root/vnc-bionic/catkin_ws/src/recorder/wavefile/"/>
 

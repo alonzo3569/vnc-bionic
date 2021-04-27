@@ -88,24 +88,24 @@ hydrophone_data_node::hydrophone_data_node(){
 //        pcm_bits_ = sizeof(int32_t) * 8;
 
     ros::param::get("~DEVICE_NAME", DEVICE_NAME_);
-    cout << "1" << DEVICE_NAME_ << endl;
+    cout << "1,name" << DEVICE_NAME_ << endl;
     ros::param::get("~pcm_id", pcm_id_);
-    cout << "2" << pcm_id_ << endl;
+    cout << "2,id" << pcm_id_ << endl;
     ros::param::get("~pcm_available_channels", tmp);
     pcm_available_channels_ = tmp;
-    cout << "3" << pcm_available_channels_ << endl;
+    cout << "3, channels" << pcm_available_channels_ << endl;
     ros::param::get("~pcm_frames", tmp);
     pcm_frames_ = tmp;
-    cout << "4" << pcm_frames_ << endl;
+    cout << "4, frames" << pcm_frames_ << endl;
     ros::param::get("~pcm_sampleRate", tmp);
     pcm_sampleRate_ = tmp;
-    cout << "5" << pcm_sampleRate_ << endl;
+    cout << "5, sampleRate" << pcm_sampleRate_ << endl;
     ros::param::get("~pcm_bits", tmp);
     pcm_bits_ = tmp;
-    cout << "6" << pcm_bits_ << endl;
+    cout << "6, bits" << pcm_bits_ << endl;
     ros::param::get("~msg_length", tmp);
     msg_length_ = tmp;
-    cout << "7" << msg_length_ << endl;
+    cout << "7, msg length" << msg_length_ << endl;
 
 
 
@@ -185,9 +185,11 @@ bool hydrophone_data_node::setRecorderParams(void) {
 
     /* Set sample rate. */
     snd_pcm_hw_params_set_rate_near(pcm_handle_, pcm_params_, &pcm_sampleRate_, &pcm_dir_);
+    cout << "pcm_sampleRate_" << pcm_sampleRate_ << endl;
   
     /* Set period size to frames. */
     snd_pcm_hw_params_set_period_size_near(pcm_handle_, pcm_params_, &pcm_frames_, &pcm_dir_);
+    cout << "pcm_frames_" << pcm_frames_ << endl;
 
     /* Write the params to the driver. */
     rc = snd_pcm_hw_params(pcm_handle_, pcm_params_);
@@ -196,10 +198,16 @@ bool hydrophone_data_node::setRecorderParams(void) {
         return false;
     }
 
+    cout << "pcm_params_" << pcm_params_ << endl;
+    cout << "pcm_dir_" << pcm_dir_ << endl;
+    cout << "pcm_available_channels_" << pcm_available_channels_ << endl;
+
     /* Decide the period size and buffer. */
     snd_pcm_hw_params_get_period_size(pcm_params_, &pcm_frames_, &pcm_dir_);
     pcm_period_size_ = pcm_frames_ * pcm_bits_ * pcm_available_channels_ / 8; // units is byte.
     pcm_period_buffer_ = (char *) malloc(pcm_period_size_);
+    cout << "pcm_period_size_" << pcm_period_size_ << endl;
+    cout << "pcm_period_buffer_" << pcm_period_buffer_ << endl;
     return true;
 }
 
@@ -231,6 +239,8 @@ void hydrophone_data_node::Capture(void)
             hydro_msg.data_ch2.push_back(data); //channel 2 data 
         }
      case 32:
+	cout << "pcm_period_size_ - pcm_available_channels_ * (pcm_bits_/8) + 1 = " << pcm_period_size_ - pcm_available_channels_ * (pcm_bits_/8) + 1 << endl; 
+	cout << "pcm_available_channels_ * (pcm_bits_/8) = " << pcm_available_channels_ * (pcm_bits_/8) << endl; 
         for(int i = 0; i < pcm_period_size_ - pcm_available_channels_ * (pcm_bits_/8) + 1; i = i + pcm_available_channels_ * (pcm_bits_/8)){
             int sum1 = (unsigned char)pcm_period_buffer_[i]+256*(unsigned char)pcm_period_buffer_[i+1]+256*256*(unsigned char)pcm_period_buffer_[i+2]+256*256*256*pcm_period_buffer_[i+3];
             int sum2 = (unsigned char)pcm_period_buffer_[i+4]+256*(unsigned char)pcm_period_buffer_[i+5]+256*256*(unsigned char)pcm_period_buffer_[i+6]+256*256*256*pcm_period_buffer_[i+7];
@@ -238,7 +248,8 @@ void hydrophone_data_node::Capture(void)
             data = sum1/pow(2,31);
             hydro_msg.data_ch1.push_back(data); //channel 1 data
             data = sum2/pow(2,31);
-            hydro_msg.data_ch2.push_back(data); //channel 2 data 
+            hydro_msg.data_ch2.push_back(data); //channel 2 data
+	    cout << "i = " <<  i << endl;  
         }
     }
 }
@@ -246,6 +257,7 @@ void hydrophone_data_node::Capture(void)
 void hydrophone_data_node::run(void){
     // Set the parameter of recorder and check if the command succeeded
     bool enable_recorder = setRecorderParams();
+    cout << "Set params function" << endl;
     if(enable_recorder == false)
     {
         ROS_ERROR("ROS shutdown");
@@ -256,8 +268,10 @@ void hydrophone_data_node::run(void){
     while (ros::ok())
     {
         Capture();
+	cout << "cpature function" << endl; 
         if(hydro_msg.data_ch1.size() >= pcm_sampleRate_ * msg_length_)    // send data every 0.5 second
         {
+	    cout << "msg biggerr than 0.1 sec" << endl;
             hydro_msg.length = hydro_msg.data_ch1.size();
             ROS_INFO("Published %d samples data.", (int)hydro_msg.data_ch1.size());
 
@@ -273,12 +287,15 @@ int main (int argc, char** argv)
 {
     // Initialize ROS
     ros::init(argc, argv, "hydrophone_data_node");
+    cout << "ros init" << endl;
 
     // Create hydrophone object
     hydrophone_data_node hydro_obj;
+    cout << "create object" << endl;
 
     // Run
     hydro_obj.run();
+    cout << "object run" << endl;
 
     return 0;
 }

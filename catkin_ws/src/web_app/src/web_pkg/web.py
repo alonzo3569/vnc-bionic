@@ -91,7 +91,7 @@ class Dashboard(object):
         # voltage time axis
         self.time_axis = list(range(0,self.plot_ch1.size,1))
         self.time_axis = [element/self.fs for element in self.time_axis]
-        self.division = 50 # downsample 
+        self.division = 100 # downsample 
         self.time_axis_downsample = self.time_axis[::self.division]
 
         # Setup the subscribers, action clients, etc.ntu_msgs/HydrophoneData
@@ -129,10 +129,10 @@ class Dashboard(object):
         self._app.layout = html.Div(
             [
                 # The section showing time series 
-                #html.Div(html.H3('Real-Time Volts:', className='col'), className='row my-2'),
-                #volts_graph_layout,
-                html.Div(html.H3('Spectrogram:', className='col'), className='row my-2'),
-                fft_graph_layout,
+                html.Div(html.H3('Real-Time Volts:', className='col'), className='row my-2'),
+                volts_graph_layout,
+                #html.Div(html.H3('Spectrogram:', className='col'), className='row my-2'),
+                #fft_graph_layout,
 
                 # The interval component to update the plots
                 dcc.Interval(id='interval-component',
@@ -143,103 +143,103 @@ class Dashboard(object):
         )
 
 
-#        # Connect the plotly graphs with Dash components
-#        @APP.callback(
-#            Output('volts','figure'), # Don't use [] if there's only one output
-#            [Input('interval-component','n_intervals')]
-#        )
-#        def plot_volts_cb(n_intervals):
-#
-#            Y = self.plot_ch1.tolist()
-#            Y_down = signal.resample(Y,int(len(Y)/self.division))
-#            #print('time_axis')
-#            #print(len(self.time_axis))
-#            #print('time_axis downsample')
-#            #print(len(self.time_axis_downsample))
-#
-#            #print('Y_axis')
-#            #print(len(Y))
-#            #print('Y_axis downsample')
-#            #print(len(Y_down))
-#            #print(type(Y_down))
-#            # Upper bound of dash buffer : 100k
-#
-#
-#            # plot
-#            data = go.Scatter(
-#                    x=self.time_axis_downsample,
-#                    y=Y_down.tolist(), 
-#                    name='Scatter',
-#                    mode= 'lines'
-#                    )
-#        
-#            #print(data)
-#
-#            layout = go.Layout(
-#                showlegend=True,
-#                height=500,
-#                yaxis=dict(
-#                    #fixedrange=True
-#                    range=[-0.6,0.6]
-#                ),
-#                xaxis=dict(
-#                    range=[min(self.time_axis_downsample),max(self.time_axis_downsample)]
-#                ),
-#
-#                margin=dict(
-#                    autoexpand=True
-#                )
-#            )
-#
-#
-#            return { 'data': [data], 'layout': layout }
-#
-
         # Connect the plotly graphs with Dash components
         @APP.callback(
-            Output('fft','figure'), # Don't use [] if there's only one output
+            Output('volts','figure'), # Don't use [] if there's only one output
             [Input('interval-component','n_intervals')]
         )
-        def plot_fft_cb(n_intervals):
+        def plot_volts_cb(n_intervals):
 
-            #print(len(self.fft_t_axis))
-            #print(len(self.fft_f_axis))
-            #print(self.plot_fft_ch1.shape)
-            #print(self.plot_fft_ch1.T.shape)
+            Y = self.plot_ch1.tolist()
+            Y_down = signal.resample(Y,int(len(Y)/self.division))
+            #print('time_axis')
+            #print(len(self.time_axis))
+            #print('time_axis downsample')
+            #print(len(self.time_axis_downsample))
+
+            #print('Y_axis')
+            #print(len(Y))
+            #print('Y_axis downsample')
+            #print(len(Y_down))
+            #print(type(Y_down))
+            # Upper bound of dash buffer : 100k
+
 
             # plot
-            data = go.Heatmap(
-                    x=self.fft_t_axis,
-                    y=self.fft_f_axis, 
-                    z=self.plot_fft_ch1.tolist(),
-                    type='heatmap',
-                    colorscale='Jet',
-                    #name='Scatter',
-                    #mode= 'lines'
+            data = go.Scatter(
+                    x=self.time_axis_downsample,
+                    y=Y_down.tolist(), 
+                    name='Scatter',
+                    mode= 'lines'
                     )
         
             #print(data)
 
             layout = go.Layout(
-                #showlegend=True,
-                #height=500,
+                showlegend=True,
+                height=500,
                 yaxis=dict(
-                    title='Frequency'
                     #fixedrange=True
-                    #range=[-0.6,0.6]
+                    range=[-0.6,0.6]
                 ),
                 xaxis=dict(
-                    title='Time'
-                #    range=[min(self.time_axis_downsample),max(self.time_axis_downsample)]
+                    range=[min(self.time_axis_downsample),max(self.time_axis_downsample)]
                 ),
 
-                #margin=dict(
-                #    autoexpand=True
-                #)
+                margin=dict(
+                    autoexpand=True
+                )
             )
 
 
             return { 'data': [data], 'layout': layout }
+
+
+#        # Connect the plotly graphs with Dash components
+#        @APP.callback(
+#            Output('fft','figure'), # Don't use [] if there's only one output
+#            [Input('interval-component','n_intervals')]
+#        )
+#        def plot_fft_cb(n_intervals):
+#
+#            #print(len(self.fft_t_axis))
+#            #print(len(self.fft_f_axis))
+#            #print(self.plot_fft_ch1.shape)
+#            #print(self.plot_fft_ch1.T.shape)
+#
+#            # plot
+#            data = go.Heatmap(
+#                    x=self.fft_t_axis,
+#                    y=self.fft_f_axis, 
+#                    z=self.plot_fft_ch1.tolist(),
+#                    type='heatmap',
+#                    colorscale='Jet',
+#                    #name='Scatter',
+#                    #mode= 'lines'
+#                    )
+#        
+#            #print(data)
+#
+#            layout = go.Layout(
+#                #showlegend=True,
+#                #height=500,
+#                yaxis=dict(
+#                    title='Frequency'
+#                    #fixedrange=True
+#                    #range=[-0.6,0.6]
+#                ),
+#                xaxis=dict(
+#                    title='Time'
+#                #    range=[min(self.time_axis_downsample),max(self.time_axis_downsample)]
+#                ),
+#
+#                #margin=dict(
+#                #    autoexpand=True
+#                #)
+#            )
+#
+#
+#            return { 'data': [data], 'layout': layout }
 
 
     def _fft_cb(self, msg):

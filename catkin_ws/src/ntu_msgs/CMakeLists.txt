@@ -53,6 +53,10 @@ add_message_files(
    FILES
    HydrophoneData.msg
    HydrophoneFFTData.msg
+   Kalman.msg
+   RobotStatus.msg
+   Tdoa.msg
+   SyncTdoa.msg
  )
 
 ## Generate services in the 'srv' folder

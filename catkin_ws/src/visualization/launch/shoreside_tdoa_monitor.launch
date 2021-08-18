@@ -3,7 +3,7 @@
     <!-- Params -->
     <arg name="rate" default="192000"/>
     <arg name="tdoa_window_length" default="1.0"/>
-    <arg name="monitor_vehicle" default="heron"/>
+    <arg name="monitor_vehicle" default="duckieboat"/>
 
     <group ns="$(arg monitor_vehicle)">
 

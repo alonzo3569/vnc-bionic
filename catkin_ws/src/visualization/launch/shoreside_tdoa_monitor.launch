@@ -3,7 +3,7 @@
     <!-- Params -->
     <arg name="rate" default="192000"/>
     <arg name="tdoa_window_length" default="1.0"/>
-    <arg name="monitor_vehicle" default="duckieboat"/>
+    <arg name="monitor_vehicle" default="heron"/>
 
     <group ns="$(arg monitor_vehicle)">
 
@@ -14,6 +14,16 @@
         </node>
 
     </group>
+
+    <!-- multi-master discovery-->
+    <node pkg="master_discovery_fkie" type="master_discovery" name="master_discovery_node" output="screen">
+        <param name="_mcast_group" value="224.0.0.1"/>
+    </node>
+
+    <!-- multi-master sync-->
+    <node pkg="master_sync_fkie" type="master_sync" name="master_sync_node" output="screen">
+    </node>
+
 
 
 </launch>

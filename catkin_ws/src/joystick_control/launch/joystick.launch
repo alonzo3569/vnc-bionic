@@ -2,13 +2,18 @@
 
     <!-- Params -->
     <arg name="joystick_port" default="/dev/input/js0"/>
+    <arg name="vehicle" default="duckieboat"/>
 
-    <!-- Joystick -->
-    <node pkg="joystick_control" type="joystick_control.py" name="joystick_control" />
+    <group ns="$(arg vehicle)">
 
-    <node pkg="joy" type="joy_node" name="joy_node">
-        <param name="dev" value="$(arg joystick_port)" />
-    </node>
+        <!-- Joystick -->
+        <node pkg="joystick_control" type="joystick_control.py" name="joystick_control" />
+    
+        <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="dev" value="$(arg joystick_port)" />
+        </node>
+
+    </group>
 
 </launch>
 

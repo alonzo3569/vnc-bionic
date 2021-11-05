@@ -19,14 +19,16 @@ class Joystick():
         self.motor_msg = Motor()
 
         # Publisher
-        self.motor_pub = rospy.Publisher("/motor", Motor, queue_size=10)
+        self.motor_pub = rospy.Publisher("motor", Motor, queue_size=10)
 
         # Subscriber
-        self.joy_sub = rospy.Subscriber("/joy", Joy, self.cb_joy)
+        self.joy_sub = rospy.Subscriber("joy", Joy, self.cb_joy)
 
     def cb_joy(self, msg):
         # axes   : type float, left/up : +1 ;  right/down : -1 
         # button : type int, press : 1, release : 0
+        print msg.axes
+        print msg.buttons
         [leftStickLR, lefttStickUpDown, rightStickLR, rightStickUpDown, crossLR, crossUpDown] = msg.axes
         button_state = msg.buttons
         [X, A, B, Y, LB, RB, LT, RT, back, start, button_stick_left, button_stick_right] = button_state

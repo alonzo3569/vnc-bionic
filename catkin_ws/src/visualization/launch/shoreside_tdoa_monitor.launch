@@ -3,6 +3,7 @@
     <!-- Params -->
     <arg name="rate" default="192000"/>
     <arg name="tdoa_window_length" default="1.0"/>
+    <arg name="joystick_port" default="/dev/input/js0"/>
     <arg name="monitor_vehicle" default="duckieboat"/>
 
     <group ns="$(arg monitor_vehicle)">
@@ -12,6 +13,14 @@
             <param name="tdoa_window_length" type="double" value="$(arg tdoa_window_length)"/>
             <param name="rate" type="int" value="$(arg rate)"/>
         </node>
+
+        <!-- Joystick -->
+        <node pkg="joystick_control" type="joystick_control.py" name="joystick_control" />
+
+        <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="dev" value="$(arg joystick_port)" />
+        </node>
+
 
     </group>
 
